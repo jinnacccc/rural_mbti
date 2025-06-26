@@ -1,20 +1,131 @@
-
 <!DOCTYPE html>
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>농촌지도사형 MBTI 진단</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gradient-to-br from-green-50 to-blue-50 min-h-screen flex items-center justify-center p-4">
   <div id="app" class="w-full max-w-md bg-white rounded-lg shadow-xl p-8"></div>
+
   <script>
+    //️⃣ 상태 선언
     const app = document.getElementById('app');
     const state = { currentQuestion: 0, answers: {}, showResult: false, mbtiResult: '', userName: '', showNameInput: true };
-    const questions = [...];  // 질문 데이터 생략 (형식상)
-    const mbtiTypes = {...};  // MBTI 유형 데이터 생략 (형식상)
-    const render = () => { app.innerHTML = '<p>진단 화면입니다 (코드 축약)</p>'; };
-    const calcResult = () => { state.mbtiResult = 'ESTJ'; state.showResult = true; };
+
+    //️⃣ 질문 목록
+    const questions = [
+      { category: "에너지 방향", question: "농가 방문 상황에서 당신은?", options: [ { key: 'E', text: '농가에 직접 찾아가서 대화하며 현장 상황을 파악하는 것이 편하다' }, { key: 'I', text: '미리 전화나 서면으로 상황을 파악한 후 방문하는 것을 선호한다' } ]},
+      { category: "에너지 방향", question: "농업기술 교육을 진행할 때?", options: [ { key: 'E', text: '농민들과 활발히 소통하며 즉석에서 질문과 답변을 주고받는다' }, { key: 'I', text: '체계적으로 준비한 자료를 바탕으로 차근차근 설명한다' } ]},
+      { category: "에너지 방향", question: "농촌지도 업무 후 에너지 충전은?", options: [ { key: 'E', text: '동료들과 업무 경험을 나누거나 농민들과 더 대화하고 싶어진다' }, { key: 'I', text: '혼자 조용히 하루를 정리하고 다음 계획을 세우고 싶어진다' } ]},
+      { category: "에너지 방향", question: "농업 관련 회의나 세미나에서?", options: [ { key: 'E', text: '적극적으로 발언하고 다른 참석자들과 네트워킹을 즐긴다' }, { key: 'I', text: '경청하며 필요한 정보를 수집하고 깊이 있게 생각한다' } ]},
+      { category: "에너지 방향", question: "새로운 농업기술을 농민들에게 전파할 때?", options: [ { key: 'E', text: '여러 농가를 돌아다니며 직접 만나서 설명하는 것을 선호한다' }, { key: 'I', text: '자료를 정리해서 소수의 핵심 농민들에게 먼저 전달한다' } ]},
+      { category: "정보 수집 방식", question: "새로운 농업기술을 학습할 때?", options: [ { key: 'S', text: '실제 사례와 구체적인 데이터, 현장 적용 결과를 중심으로 학습한다' }, { key: 'N', text: '기술의 원리와 향후 발전 가능성, 응용 방안을 먼저 생각한다' } ]},
+      { category: "정보 수집 방식", question: "농가 문제 해결 접근법은?", options: [ { key: 'S', text: '현재 상황을 정확히 파악하고 검증된 해결책을 제시한다' }, { key: 'N', text: '근본 원인을 분석하고 창의적인 해결 방안을 모색한다' } ]},
+      { category: "정보 수집 방식", question: "농촌 발전 계획을 세울 때?", options: [ { key: 'S', text: '현실적이고 단계별로 실행 가능한 구체적 계획을 선호한다' }, { key: 'N', text: '장기적 비전과 혁신적 아이디어를 중심으로 큰 그림을 그린다' } ]},
+      { category: "정보 수집 방식", question: "농업 현장을 관찰할 때 주목하는 것은?", options: [ { key: 'S', text: '작물의 생육상태, 토양 조건, 기상 상황 등 구체적인 현실' }, { key: 'N', text: '농업 트렌드의 변화, 새로운 가능성, 혁신적 아이디어' } ]},
+      { category: "정보 수집 방식", question: "농민들에게 조언할 때?", options: [ { key: 'S', text: '경험에 바탕한 실용적이고 검증된 방법을 제시한다' }, { key: 'N', text: '상황에 맞는 새로운 접근법과 창의적 대안을 제시한다' } ]},
+      { category: "의사결정 방식", question: "농가 지도 시 갈등 상황에서?", options: [ { key: 'T', text: '객관적 데이터와 논리적 근거를 바탕으로 최선의 방법을 제시한다' }, { key: 'F', text: '농민의 입장과 감정을 충분히 고려하여 모두가 수용할 수 있는 방안을 찾는다' } ]},
+      { category: "의사결정 방식", question: "농업 정책 건의 시?", options: [ { key: 'T', text: '효율성과 경제성을 중심으로 한 논리적 근거를 강조한다' }, { key: 'F', text: '농민들의 실생활에 미치는 영향과 사회적 가치를 중시한다' } ]},
+      { category: "의사결정 방식", question: "농민과의 상담에서?", options: [ { key: 'T', text: '문제의 원인을 분석하고 합리적 해결책을 제시하는 데 집중한다' }, { key: 'F', text: '농민의 마음을 이해하고 격려하며 함께 해결책을 찾아간다' } ]},
+      { category: "의사결정 방식", question: "농업기술 도입 여부를 판단할 때?", options: [ { key: 'T', text: '비용 대비 효과, 기술적 타당성 등을 객관적으로 분석한다' }, { key: 'F', text: '농민들의 수용 가능성과 지역사회에 미치는 영향을 고려한다' } ]},
+      { category: "의사결정 방식", question: "농촌지도사 업무에서 가장 중요하게 생각하는 것은?", options: [ { key: 'T', text: '정확한 정보 전달과 효과적인 문제 해결' }, { key: 'F', text: '농민들과의 신뢰 관계 구축과 공감대 형성' } ]},
+      { category: "생활 양식", question: "농촌지도 업무 스케줄 관리는?", options: [ { key: 'J', text: '월간, 주간 계획을 세우고 정해진 일정대로 체계적으로 진행한다' }, { key: 'P', text: '상황에 따라 유연하게 조정하며 긴급한 일이 생기면 우선 처리한다' } ]},
+      { category: "생활 양식", question: "농업기술 보급사업 추진 시?", options: [ { key: 'J', text: '명확한 목표와 단계별 실행계획을 세우고 일정에 맞춰 추진한다' }, { key: 'P', text: '현장 상황을 보면서 필요에 따라 방향을 조정하며 유연하게 대응한다' } ]},
+      { category: "생활 양식", question: "농촌지도사 업무 마감 관리는?", options: [ { key: 'J', text: '여유를 두고 미리미리 준비하여 정해진 기한 내에 완료한다' }, { key: 'P', text: '마감이 임박해야 집중력이 생기고, 압박감 속에서 더 좋은 아이디어가 나온다' } ]},
+      { category: "생활 양식", question: "농업 현장에서 예상치 못한 상황이 발생했을 때?", options: [ { key: 'J', text: '기존 계획을 수정하여 체계적으로 대응 방안을 마련한다' }, { key: 'P', text: '즉석에서 상황에 맞는 창의적 해결책을 찾아 실행한다' } ]},
+      { category: "생활 양식", question: "농촌지도 업무 방식으로 선호하는 것은?", options: [ { key: 'J', text: '정해진 절차와 방법론에 따라 체계적이고 일관성 있게 진행' }, { key: 'P', text: '각 상황의 특성에 맞춰 융통성 있고 다양한 방법으로 진행' } ]}
+    ];
+
+    //️⃣ MBTI 유형 정의
+    const mbtiTypes = {
+      ESTJ: { name: '실무형 농촌지도사', description: '체계적이고 효율적인 농촌지도 서비스 제공', characteristics: ['명확한 목표 설정과 단계별 실행으로 성과 창출', '농민들에게 실용적이고 검증된 기술 전수', '지역농업 발전을 위한 조직적 접근', '효율성과 실용성을 중시하는 업무 스타일'], color: 'bg-blue-500' },
+      ESFJ: { name: '봉사형 농촌지도사', description: '농민들의 마음을 이해하고 배려하는 따뜻한 지도', characteristics: ['지역사회 화합과 협력 증진에 기여', '농민 개개인의 상황을 고려한 맞춤형 서비스', '전통과 현대 기술의 조화로운 접목', '따뜻한 인간관계를 바탕으로 한 신뢰 구축'], color: 'bg-green-500' },
+      ENFJ: { name: '교육형 농촌지도사', description: '농민들의 잠재력을 발견하고 성장을 돕는 지도', characteristics: ['열정적이고 감화력 있는 농업기술 교육', '지역 농업인 리더 양성에 탁월', '농촌 공동체 발전을 위한 비전 제시', '영감을 주는 커뮤니케이션 능력'], color: 'bg-purple-500' },
+      ENTJ: { name: '혁신형 농촌지도사', description: '농업 현장의 혁신과 변화를 이끄는 리더십', characteristics: ['장기적 관점에서 농촌 발전 전략 수립', '효율적인 시스템 구축으로 생산성 향상', '새로운 농업 트렌드 도입과 확산', '전략적 사고와 강력한 추진력'], color: 'bg-red-500' },
+      ISFJ: { name: '성실형 농촌지도사', description: '꼼꼼하고 세심한 농가별 맞춤 지도', characteristics: ['농민들의 어려움에 공감하고 실질적 도움 제공', '안정적이고 지속적인 관계 유지', '전통적 농업 가치와 현대 기술의 균형', '섬세하고 배려 깊은 서비스 제공'], color: 'bg-teal-500' },
+      ISTJ: { name: '신뢰형 농촌지도사', description: '정확한 정보와 검증된 기술로 신뢰 구축', characteristics: ['체계적이고 일관된 농촌지도 서비스', '농업 정책과 제도의 정확한 전달', '농민들의 든든한 기술적 파트너', '책임감 있고 신뢰할 수 있는 업무 처리'], color: 'bg-indigo-500' },
+      INFJ: { name: '통찰형 농촌지도사', description: '농촌의 미래를 내다보는 통찰력 있는 지도', characteristics: ['농민 개개인의 잠재력과 가능성 발견', '지속가능한 농업 발전 방향 제시', '농촌 문화와 가치 보전에 기여', '깊이 있는 이해와 장기적 비전'], color: 'bg-cyan-500' },
+      INTJ: { name: '전략형 농촌지도사', description: '농업 현장의 복잡한 문제를 체계적으로 분석', characteristics: ['장기적 농촌 발전 전략과 로드맵 수립', '과학적 근거 바탕의 혁신적 해결책 제시', '농업 기술 발전의 선도적 역할', '체계적 분석과 전략적 계획 수립'], color: 'bg-slate-600' },
+      ESFP: { name: '활력형 농촌지도사', description: '밝고 긍정적인 에너지로 농촌 현장 활성화', characteristics: ['농민들과 친밀한 관계 구축', '현장 중심의 생동감 있는 기술 지도', '농촌 문화 행사와 공동체 활동 주도', '긍정적 에너지와 열정적 참여'], color: 'bg-yellow-500' },
+      ESTP: { name: '현실형 농촌지도사', description: '즉각적이고 실용적인 문제 해결', characteristics: ['현장 상황에 맞는 유연한 대응', '농민들과의 자연스러운 소통', '실제 체험 중심의 기술 전수', '실용적이고 즉각적인 문제 해결'], color: 'bg-orange-500' },
+      ENFP: { name: '열정형 농촌지도사', description: '창의적이고 다양한 농업 아이디어 제공', characteristics: ['농민들의 새로운 도전 의욕 고취', '네트워킹을 통한 농업 정보 공유 활성화', '농촌 관광과 6차 산업 발전 기여', '창의적 아이디어와 열정적 추진력'], color: 'bg-pink-500' },
+      ENTP: { name: '창의형 농촌지도사', description: '농업 현장의 혁신적 변화 주도', characteristics: ['새로운 농업 기술과 모델 개발', '농민들의 창의적 사고 자극', '농업과 타 산업의 융합 모델 제시', '혁신적 아이디어와 창의적 접근'], color: 'bg-violet-500' },
+      ISFP: { name: '협력형 농촌지도사', description: '농민 개개인의 개성과 상황 존중', characteristics: ['자연친화적 농업 방법 추구', '조용하지만 깊이 있는 기술 지도', '농촌의 자연환경 보전 중시', '개인의 가치와 자율성 존중'], color: 'bg-emerald-500' },
+      ISTP: { name: '기술형 농촌지도사', description: '실용적이고 효과적인 농업 기술 전문가', characteristics: ['농기계와 시설 운영 기술 지도', '문제 발생 시 신속한 기술적 해결', '농민들의 실질적 기술 파트너', '실용적 기술과 효율적 문제 해결'], color: 'bg-gray-600' },
+      INFP: { name: '가치형 농촌지도사', description: '농촌의 가치와 의미를 중시하는 지도', characteristics: ['농민 개개인의 가치관과 목표 존중', '지속가능하고 친환경적 농업 추구', '농촌 공동체의 정신적 가치 증진', '진정성 있는 가치 추구와 의미 있는 변화'], color: 'bg-rose-500' },
+      INTP: { name: '분석형 농촌지도사', description: '농업 현상에 대한 깊이 있는 분석과 연구', characteristics: ['논리적이고 체계적인 문제 해결 접근', '새로운 농업 이론과 기술 개발', '농업 과학의 이론적 토대 제공', '분석적 사고와 혁신적 연구'], color: 'bg-lime-600' }
+    };
+
+    //️⃣ 렌더 함수
+    const render = () => {
+      app.innerHTML = '';
+      if (state.showNameInput) {
+        app.innerHTML = `
+          <div class="text-center mb-6">
+            <div class="mx-auto h-16 w-16 text-green-600 mb-4">👤</div>
+            <h1 class="text-2xl font-bold text-gray-800 mb-2">농촌지도사형</h1>
+            <h2 class="text-xl font-semibold text-gray-700 mb-4">성격유형 진단</h2>
+            <p class="text-gray-600 text-sm">MBTI 성격유형과 농촌지도사의 주요 업무 특성을 결합한 진단입니다</p>
+          </div>
+          <div class="space-y-4">
+            <div><label class="block text-sm font-medium text-gray-700 mb-2">성함을 입력해주세요</label><input type="text" id="nameInput" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" placeholder="이름을 입력하세요"/></div>
+            <button id="startBtn" class="w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 transition-colors">진단 시작하기</button>
+          </div>`;
+        document.getElementById('startBtn').onclick = () => {
+          const val = document.getElementById('nameInput').value.trim();
+          if (val) { state.userName = val; state.showNameInput = false; render(); }
+        };
+        return;
+      }
+
+      if (state.showResult) {
+        const t = mbtiTypes[state.mbtiResult];
+        app.innerHTML = `
+          <div class="bg-white rounded-lg shadow-xl overflow-hidden">
+            <div class="${t.color} text-white p-6"><div class="flex justify-between"><div><h1 class="text-3xl font-bold mb-2">${t.name}</h1><p class="text-xl opacity-90">${state.mbtiResult} 유형</p></div><div class="text-right text-sm"><div>👤 ${state.userName}</div><div>📅 ${new Date().toLocaleDateString('ko-KR')}</div></div></div></div>
+            <div class="p-6"><h2 class="text-2xl font-semibold text-gray-800 mb-3">유형 특성</h2><p class="text-lg text-gray-700 mb-4">${t.description}</p><ul class="mb-6">${t.characteristics.map(c => `<li class="flex items-start"><div class="w-2 h-2 ${t.color} rounded-full mt-2 mr-3"></div><span>${c}</span></li>`).join('')}</ul><div class="flex gap-2"><button id="downloadBtn" class="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700">결과 다운로드</button><button id="resetBtn" class="bg-gray-600 text-white py-2 px-4 rounded hover:bg-gray-700">다시 진단하기</button></div></div>
+          </div>`;
+        document.getElementById('downloadBtn').onclick = () => {
+          const data = { name: state.userName, date: new Date().toLocaleDateString('ko-KR'), mbtiType: state.mbtiResult, typeInfo: t, answers: state.answers };
+          const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `농촌지도사형_진단결과_${state.userName.replace(/[^\w가-힣]/g,'')}_${new Date().toISOString().split('T')[0]}.json`;
+          a.click();
+        };
+        document.getElementById('resetBtn').onclick = () => {
+          Object.assign(state, { currentQuestion:0, answers:{}, showResult:false, mbtiResult:'', userName:'', showNameInput:true });
+          render();
+        };
+        return;
+      }
+
+      const q = questions[state.currentQuestion];
+      app.innerHTML = `
+        <div class="mb-6"><div class="flex justify-between text-sm text-gray-700 mb-1"><span>진행률: ${state.currentQuestion+1} / ${questions.length}</span><span>${q.category}</span></div><div class="w-full bg-gray-200 rounded-full h-2"><div class="bg-green-600 h-2 rounded-full" style="width:${Math.round((state.currentQuestion+1)/questions.length*100)}%"></div></div></div>
+        <div class="mb-4"><h2 class="text-xl font-semibold mb-4">${q.question}</h2>${q.options.map((o,i)=>`<button class="w-full text-left p-4 border rounded mb-2 hover:border-green-500 hover:bg-green-50" data-key="${o.key}"><div class="flex"><div class="w-6 h-6 bg-gray-100 rounded-full flex items-center justify-center mr-2">${i?"B":"A"}</div>${o.text}</div></button>`).join('')}</div>
+        <div class="flex justify-between"><button id="prevBtn" class="text-gray-600 hover:text-gray-800" ${state.currentQuestion===0?'disabled':''}>⬅ 이전</button><span class="text-sm text-gray-500">답변 완료: ${Object.keys(state.answers).length} / ${questions.length}</span></div>`;
+      document.querySelectorAll('[data-key]').forEach(b=>b.onclick= e=>{
+        state.answers[state.currentQuestion] = e.currentTarget.getAttribute('data-key');
+        if (state.currentQuestion < questions.length-1) state.currentQuestion++; else calcResult();
+        render();
+      });
+      document.getElementById('prevBtn').onclick = () => { if(state.currentQuestion>0){state.currentQuestion--; render();} };
+    };
+
+    //️⃣ 결과 계산
+    const calcResult = () => {
+      const s = {E:0,I:0,S:0,N:0,T:0,F:0,J:0,P:0};
+      Object.values(state.answers).forEach(a=>s[a]++);
+      state.mbtiResult = (s.E>=s.I?'E':'I')+(s.S>=s.N?'S':'N')+(s.T>=s.F?'T':'F')+(s.J>=s.P?'J':'P');
+      state.showResult = true;
+      render();
+    };
+
+    //️⃣ 최초 실행
     render();
   </script>
 </body>
